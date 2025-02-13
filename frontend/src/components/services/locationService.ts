@@ -6,7 +6,7 @@ const URL : string = "http://localhost:3000/api";
 
 export const listarLocaciones = async (): Promise<Locaciones[]> => {
     const resp = await axios.get(`${URL}/locaciones/listar`, {
-        headers : HttpHeader
+        headers : HttpHeader()
     });
     return resp.data;
 };

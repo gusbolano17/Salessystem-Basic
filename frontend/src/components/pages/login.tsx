@@ -24,6 +24,7 @@ export const Login : FC = () => {
         try{
             const logData = await login(data);
             sessionStorage.setItem("token", logData.token);
+            console.log(sessionStorage.getItem("token"));
             navigate("/dashboard");
         }catch (err){
             console.log(err);
