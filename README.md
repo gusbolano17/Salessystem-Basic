@@ -27,7 +27,7 @@ Este es un sistema básico de gestión de ventas desarrollado con el stack MERN 
 
 ### 1. Clonar el repositorio
 ```sh
-git clone https://github.com/tuusuario/sistema-ventas-mern.git
+git clone [https://github.com/gusbolano17/Salessystem-Basic.git]
 cd sistema-ventas-mern
 ```
 
