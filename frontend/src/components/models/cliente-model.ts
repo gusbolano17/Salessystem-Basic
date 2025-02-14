@@ -11,4 +11,5 @@ export interface Cliente{
     tipoDocumento: string;
     tipoPersona: string;
     locacion: Locaciones;
+    estado?: string;
 }

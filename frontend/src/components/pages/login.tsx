@@ -20,7 +20,7 @@ export const Login : FC = () => {
     const {register, formState : {errors}, handleSubmit} = useForm<FormLoginProps>();
     const navigate = useNavigate();
 
-    const submitForm = async (data:any) => {
+    const submitForm = async (data:FormLoginProps) => {
         try{
             const logData = await login(data);
             sessionStorage.setItem("token", logData.token);

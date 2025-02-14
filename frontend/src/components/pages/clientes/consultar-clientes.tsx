@@ -11,22 +11,26 @@ import {
     Toolbar,
     Typography
 } from "@mui/material";
-import {Cliente} from "../../models/cliente-model.ts";
-import {listarClientes} from "../../services/clientesService.ts";
+import {listarClientes, listarClientesNombre} from "../../services/clientesService.ts";
 import {DatePicker, LocalizationProvider} from "@mui/x-date-pickers";
 import {DemoContainer} from "@mui/x-date-pickers/internals/demo";
 import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs";
 import {Controller, useForm} from "react-hook-form";
+import {TableRender} from "../../Layout/table-render.tsx";
+import dayjs from "dayjs";
+import {clientesForTables} from "../../utils/prevew-info-tables.ts";
 
 export const ConsultarClientes : FC = () => {
 
     const {handleSubmit, control} = useForm();
 
-    const [clientes, setClientes] = useState<Cliente[]>([]);
+    const [clientes, setClientes] = useState<any[]>([]);
+    const [selectedOp, setSelectedOp] = useState<number>(0);
     const [showSearchNombre, setShowSearchNombre] = useState<boolean>(false);
     const [showSearchDoc, setShowSearchDoc] = useState<boolean>(false);
     const [showSearchDate, setSearchShowDate] = useState<boolean>(false);
-    // const [renderTable, setRenderTable] = useState<boolean>(false);
+    const [showButton, setShowButton] = useState<boolean>(false);
+    const [renderTable, setRenderTable] = useState<boolean>(false);
 
     useEffect(() => {
         listarClientes().then(resp => {
@@ -42,7 +46,9 @@ export const ConsultarClientes : FC = () => {
 
     const handleSelect = (e : SelectChangeEvent) => {
         const value  = e.target.value as unknown as number;
-
+        setSelectedOp(value);
+        control._reset();
+        setShowButton(true);
         switch (value) {
             case 1:
                 setShowSearchNombre(true);
@@ -63,12 +69,37 @@ export const ConsultarClientes : FC = () => {
                 setShowSearchNombre(false);
                 setShowSearchDoc(false);
                 setSearchShowDate(false);
+                setShowButton(false)
         }
     }
 
     const submitSearch = (search : any) => {
+        switch (selectedOp) {
+            case 1:
+                { const {nombre} = search;
+                listarClientesNombre(nombre.substring(0,nombre.indexOf(" "))).then(resp => {
+                    setClientes(clientesForTables(resp));
+                    setRenderTable(true);
+                });
+
+                break;
+                }
+            case 2:
+                break;
+            case 3:
+                break;
+        }
         console.log(search)
     }
+
+    const editData = (data : any) => {
+        console.log(data);
+    }
+
+    const deleteData = (data : any) => {
+        console.log(data);
+    }
+
 
     return (
         <Box>
@@ -99,15 +130,18 @@ export const ConsultarClientes : FC = () => {
                             <Controller
                                 name="nombre"
                                 control={control}
-                                render={({field}) => (
+                                defaultValue=""
+                                render={({ field }) => (
                                     <Autocomplete
                                         freeSolo
-                                        sx={{flexGrow : 1}}
+                                        sx={{ flexGrow: 1 }}
                                         options={clientes.map((option) => `${option.nombres} ${option.apellidos}`)}
-                                        {...field}
+                                        value={field.value || ""}
+                                        onChange={(_, newValue) => field.onChange(newValue)}
                                         renderInput={(params) => <TextField {...params} label="Nombre persona" />}
                                     />
-                                )}/>
+                                )}
+                            />
                           ) : showSearchDoc ? (
                                 <Controller
                                     name="documento"
@@ -119,14 +153,30 @@ export const ConsultarClientes : FC = () => {
                         ) :
                         showSearchDate ? (
                             <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                <DemoContainer components={['DatePicker']}>
-                                    <DatePicker label="Basic date picker" />
-                                </DemoContainer>
+                                <Controller
+                                    name="fecha"
+                                    control={control}
+                                    defaultValue={null}
+                                    render={({ field }) => (
+                                        <DemoContainer components={["DatePicker"]}>
+                                            <DatePicker
+                                                label="Fecha de Nacimiento"
+                                                value={field.value ? dayjs(field.value) : null}
+                                                onChange={(newValue) => field.onChange(newValue)}
+                                            />
+                                        </DemoContainer>
+                                    )}
+                                />
                             </LocalizationProvider>
                         ): ""}
-                        <Button type="submit">Buscar</Button>
+                        {showButton ? (<Button type="submit">Buscar</Button>) : ""}
                     </form>
                 </Box>
+                {renderTable ? (
+                    <Box>
+                        <TableRender data={clientes} editData={editData} deleteData={deleteData}/>
+                    </Box>
+                ) : ""}
             </Paper>
         </Box>
     )

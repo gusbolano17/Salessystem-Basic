@@ -11,6 +11,27 @@ export const listarClientes = async (): Promise<Cliente[]> => {
     return dataResp.data;
 }
 
+export const listarClientesNombre = async (nombre : string): Promise<Cliente[]> => {
+    const dataResp = await axios.get(`${URL}/clientes/listar/nombre/${nombre}`, {
+        headers : HttpHeader()
+    })
+    return dataResp.data;
+}
+
+export const obtenerClientDocumento = async (td : string, doc : string): Promise<Cliente[]> => {
+    const dataResp = await axios.get(`${URL}/clientes/obtener/documento/${td}/${doc}`, {
+        headers : HttpHeader()
+    })
+    return dataResp.data;
+}
+
+export const listarClientesFecha = async (fecha : string): Promise<Cliente[]> => {
+    const dataResp = await axios.get(`${URL}/clientes/fechas/${fecha}`, {
+        headers : HttpHeader()
+    })
+    return dataResp.data;
+}
+
 export const agregarCliente = async (body : Cliente) : Promise<any> => {
     const dataResp = await axios.post(`${URL}/clientes/crear`, body, {
         headers : HttpHeader()

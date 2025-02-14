@@ -36,6 +36,28 @@ clienteController.post("/crear",async (req: Request, res: Response) => {
     }
 });
 
+clienteController.get("/listar/nombre/:nombre",async (req: Request, res: Response) => {
+    try {
+        const nombre = req.params.nombre;
+        const clientes = await Cliente.find({nombres : {$regex: nombre, $options: "i"}});
+        res.status(200).json(clientes);
+    }catch (err) {
+        res.status(500).json({ error: "Error listar los clientes" });
+    }
+
+})
+
+clienteController.get("/obtener/documento/:td/:doc",async (req: Request, res: Response) => {
+    try {
+        const td = req.params.td;
+        const doc = req.params.doc;
+        const clientes = await Cliente.find({tipoDocumento : td ,documento : doc});
+        res.status(200).json(clientes);
+    }catch (err) {
+        res.status(500).json({ error: "Error listar los clientes" });
+    }
+})
+
 clienteController.get("/listar/fechas/:fecha",async (req: Request, res: Response) => {
     try{
         const fechaInicio = new Date(req.params.fecha);
@@ -49,9 +71,3 @@ clienteController.get("/listar/fechas/:fecha",async (req: Request, res: Response
         res.status(500).json({ error: "Error al listar los clientes por fecha" });
     }
 });
-
-// clienteController.put("/editar/:id",async (req: Request, res: Response) => {
-//     const id = req.params.id;
-//     const cliente = await Cliente.findOneAndUpdate({id}, req.body);
-//
-// })
