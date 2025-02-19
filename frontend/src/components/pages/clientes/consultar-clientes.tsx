@@ -6,12 +6,18 @@ import {
     Button,
     MenuItem,
     Paper,
-    Select, SelectChangeEvent,
+    Select,
+    SelectChangeEvent,
     TextField,
     Toolbar,
     Typography
 } from "@mui/material";
-import {listarClientes, listarClientesNombre} from "../../services/clientesService.ts";
+import {
+    listarClientes,
+    listarClientesFecha,
+    listarClientesNombre,
+    obtenerClientDocumento
+} from "../../services/clientesService.ts";
 import {DatePicker, LocalizationProvider} from "@mui/x-date-pickers";
 import {DemoContainer} from "@mui/x-date-pickers/internals/demo";
 import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs";
@@ -19,78 +25,72 @@ import {Controller, useForm} from "react-hook-form";
 import {TableRender} from "../../Layout/table-render.tsx";
 import dayjs from "dayjs";
 import {clientesForTables} from "../../utils/prevew-info-tables.ts";
+import {Documentos, OpcionesBusqueda} from "../../models/enums/clientes-enums.ts";
 
 export const ConsultarClientes : FC = () => {
 
-    const {handleSubmit, control} = useForm();
+    const {handleSubmit, control, reset} = useForm();
 
     const [clientes, setClientes] = useState<any[]>([]);
-    const [selectedOp, setSelectedOp] = useState<number>(0);
-    const [showSearchNombre, setShowSearchNombre] = useState<boolean>(false);
-    const [showSearchDoc, setShowSearchDoc] = useState<boolean>(false);
-    const [showSearchDate, setSearchShowDate] = useState<boolean>(false);
+    const [clientesOriginales, setClientesOriginales] = useState<any[]>([]);
+    const [tipoBusqueda, setTipoBusqueda] = useState<OpcionesBusqueda | null>(null);
     const [showButton, setShowButton] = useState<boolean>(false);
     const [renderTable, setRenderTable] = useState<boolean>(false);
 
+    const opcionesBusqueda = Object.entries(OpcionesBusqueda).map(([key, value]) => ({
+        id: key,
+        label: value
+    }));
+
+    const documentoS = Object.entries(Documentos).map(([key, value]) => ({
+        id: key,
+        label: value
+    }));
+
     useEffect(() => {
+        let isMounted = true;
         listarClientes().then(resp => {
-            setClientes(resp);
-        });
+            if(isMounted){
+                setClientes(resp);
+                setClientesOriginales(resp);
+            }
+        }).catch(console.error);
+        return () => {isMounted = false}
     }, []);
 
-    const opcionesBusqueda = [
-        {id : 1, label : "Nombre"},
-        {id : 2, label: "Documento"},
-        {id : 3, label: "Fecha de creacion"}
-    ];
-
     const handleSelect = (e : SelectChangeEvent) => {
-        const value  = e.target.value as unknown as number;
-        setSelectedOp(value);
-        control._reset();
-        setShowButton(true);
-        switch (value) {
-            case 1:
-                setShowSearchNombre(true);
-                setShowSearchDoc(false);
-                setSearchShowDate(false);
-                break;
-            case 2:
-                setShowSearchNombre(false);
-                setSearchShowDate(false);
-                setShowSearchDoc(true);
-                break;
-            case 3:
-                setShowSearchNombre(false);
-                setShowSearchDoc(false);
-                setSearchShowDate(true);
-                break;
-            default:
-                setShowSearchNombre(false);
-                setShowSearchDoc(false);
-                setSearchShowDate(false);
-                setShowButton(false)
+        const value  = e.target.value as unknown as OpcionesBusqueda;
+        reset()
+        setTipoBusqueda(value);
+        setShowButton(value !== OpcionesBusqueda.TODO);
+        setRenderTable(value === OpcionesBusqueda.TODO);
+        if(value === OpcionesBusqueda.TODO){
+            setClientes(clientesForTables(clientesOriginales));
         }
     }
 
-    const submitSearch = (search : any) => {
-        switch (selectedOp) {
-            case 1:
-                { const {nombre} = search;
-                listarClientesNombre(nombre.substring(0,nombre.indexOf(" "))).then(resp => {
-                    setClientes(clientesForTables(resp));
-                    setRenderTable(true);
-                });
-
-                break;
-                }
-            case 2:
-                break;
-            case 3:
-                break;
+    const submitSearch = (search: any) => {
+        if (tipoBusqueda === OpcionesBusqueda.NOMBRE) {
+            const { nombre } = search;
+            const primerNombre = nombre.split(" ")[0];
+            listarClientesNombre(primerNombre).then(resp => {
+                setClientes(clientesForTables(resp));
+                setRenderTable(true);
+            });
+        }else if(tipoBusqueda === OpcionesBusqueda.DOCUMENTO){
+            const {tipoDocumento, documento} = search;
+            obtenerClientDocumento(tipoDocumento, documento).then(resp => {
+                setClientes(clientesForTables(resp));
+                setRenderTable(true);
+            })
+        }else if(tipoBusqueda === OpcionesBusqueda.FECHA){
+            const {fecha : {$d}} = search;
+            listarClientesFecha($d.toISOString()).then(resp => {
+                setClientes(clientesForTables(resp));
+                setRenderTable(true);
+            })
         }
-        console.log(search)
-    }
+    };
 
     const editData = (data : any) => {
         console.log(data);
@@ -126,7 +126,7 @@ export const ConsultarClientes : FC = () => {
                     </Select>
 
                     <form style={{ display: 'flex', alignItems: 'center', gap: '60',  width: '100%'}} onSubmit={handleSubmit(submitSearch)}>
-                        {showSearchNombre ? (
+                        {tipoBusqueda === OpcionesBusqueda.NOMBRE ? (
                             <Controller
                                 name="nombre"
                                 control={control}
@@ -135,23 +135,41 @@ export const ConsultarClientes : FC = () => {
                                     <Autocomplete
                                         freeSolo
                                         sx={{ flexGrow: 1 }}
-                                        options={clientes.map((option) => `${option.nombres} ${option.apellidos}`)}
+                                        options={clientesOriginales.map((option) => `${option.nombres} ${option.apellidos}`)}
                                         value={field.value || ""}
                                         onChange={(_, newValue) => field.onChange(newValue)}
                                         renderInput={(params) => <TextField {...params} label="Nombre persona" />}
                                     />
                                 )}
                             />
-                          ) : showSearchDoc ? (
-                                <Controller
-                                    name="documento"
-                                    control={control}
-                                    render={({ field }) => (
-                                        <TextField {...field} label="Documento" />
-                                    )}
-                                />
+                          ) : tipoBusqueda === OpcionesBusqueda.DOCUMENTO ? (
+                                <Box gap={2} display="flex">
+                                    <Controller
+                                        name="tipoDocumento"
+                                        control={control}
+                                        defaultValue=""
+                                        render={({ field }) => (
+                                            <Select
+                                                {...field}
+                                                displayEmpty
+                                                sx={{ minWidth: 120 }}
+                                            >
+                                                <MenuItem value="">Seleccione una opción</MenuItem>
+                                                {documentoS.map(op => (
+                                                    <MenuItem key={op.id} value={op.id}>{op.label}</MenuItem>
+                                                ))}
+                                            </Select>
+                                        )}
+                                    />
+                                    <Controller
+                                        name="documento"
+                                        defaultValue=""
+                                        control={control}
+                                        render={({ field }) => <TextField {...field} label="Documento" />}
+                                    />
+                                </Box>
                         ) :
-                        showSearchDate ? (
+                        tipoBusqueda === OpcionesBusqueda.FECHA && (
                             <LocalizationProvider dateAdapter={AdapterDayjs}>
                                 <Controller
                                     name="fecha"
@@ -168,15 +186,15 @@ export const ConsultarClientes : FC = () => {
                                     )}
                                 />
                             </LocalizationProvider>
-                        ): ""}
-                        {showButton ? (<Button type="submit">Buscar</Button>) : ""}
+                        )}
+                        {showButton && (<Button type="submit">Buscar</Button>)}
                     </form>
                 </Box>
-                {renderTable ? (
+                {renderTable && (
                     <Box>
                         <TableRender data={clientes} editData={editData} deleteData={deleteData}/>
                     </Box>
-                ) : ""}
+                )}
             </Paper>
         </Box>
     )

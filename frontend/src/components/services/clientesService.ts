@@ -26,7 +26,7 @@ export const obtenerClientDocumento = async (td : string, doc : string): Promise
 }
 
 export const listarClientesFecha = async (fecha : string): Promise<Cliente[]> => {
-    const dataResp = await axios.get(`${URL}/clientes/fechas/${fecha}`, {
+    const dataResp = await axios.get(`${URL}/clientes/listar/fechas/${fecha}`, {
         headers : HttpHeader()
     })
     return dataResp.data;
