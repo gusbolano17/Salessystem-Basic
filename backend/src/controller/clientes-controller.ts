@@ -71,3 +71,17 @@ clienteController.get("/listar/fechas/:fecha",async (req: Request, res: Response
         res.status(500).json({ error: "Error al listar los clientes por fecha" });
     }
 });
+
+clienteController.put("/editar/:id",async (req: Request, res: Response) => {
+
+    try {
+        const {id} = req.params;
+        const body = req.body;
+
+        await Cliente.findOneAndUpdate({_id: id}, {$set: body}, {new: true});
+
+        res.status(201).json({msg: "Cliente editado correctamente"});
+    }catch (err) {
+        res.status(500).json({ error: "Error al editar el cliente" });
+    }
+});

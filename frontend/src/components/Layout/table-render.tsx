@@ -40,8 +40,8 @@ export const TableRender = <T extends { [key: string]: any }>({ data, editData, 
                                 <TableCell key={String(key)}>{formatValue(row[key])}</TableCell>
                             ))}
                             <TableCell>
-                                <Button variant="contained" onClick={() => editData(row)} color="warning">Editar</Button>
-                                <Button variant="contained" onClick={() => deleteData(row)} color="error" sx={{ marginLeft: 1 }}>Eliminar</Button>
+                                <Button variant="contained" onClick={() => editData(row.Documento)} color="warning">Editar</Button>
+                                <Button variant="contained" onClick={() => deleteData(row.Documento)} color="error" sx={{ marginLeft: 1 }}>Eliminar</Button>
                             </TableCell>
                         </TableRow>
                     ))}

@@ -13,6 +13,7 @@ import {
     Typography
 } from "@mui/material";
 import {
+    editarCliente,
     listarClientes,
     listarClientesFecha,
     listarClientesNombre,
@@ -26,16 +27,24 @@ import {TableRender} from "../../Layout/table-render.tsx";
 import dayjs from "dayjs";
 import {clientesForTables} from "../../utils/prevew-info-tables.ts";
 import {Documentos, OpcionesBusqueda} from "../../models/enums/clientes-enums.ts";
+import {ModalFormEdit} from "../../utils/modal-form-edit.tsx";
+import {Cliente} from "../../models/cliente-model.ts";
+import {ClienteForm} from "../../forms/ClienteForm.tsx";
+import {Toast} from "../../utils/toast.tsx";
 
 export const ConsultarClientes : FC = () => {
 
     const {handleSubmit, control, reset} = useForm();
 
     const [clientes, setClientes] = useState<any[]>([]);
+    const [selectCliente, setSelectCliente] = useState<Cliente>();
     const [clientesOriginales, setClientesOriginales] = useState<any[]>([]);
     const [tipoBusqueda, setTipoBusqueda] = useState<OpcionesBusqueda | null>(null);
     const [showButton, setShowButton] = useState<boolean>(false);
     const [renderTable, setRenderTable] = useState<boolean>(false);
+    const [openModal, setOpenModal] = useState<boolean>(false);
+    const [toastMsg, setToastMsg] = useState<string>("");
+    const [openToast, setOpenToast] = useState<boolean>(false);
 
     const opcionesBusqueda = Object.entries(OpcionesBusqueda).map(([key, value]) => ({
         id: key,
@@ -93,109 +102,132 @@ export const ConsultarClientes : FC = () => {
     };
 
     const editData = (data : any) => {
-        console.log(data);
+        const clienteEd = clientesOriginales.find(cl => cl.documento === data);
+        setSelectCliente(clienteEd);
+        setOpenModal(true);
     }
 
     const deleteData = (data : any) => {
         console.log(data);
     }
 
+    const editarClientes = (data : Cliente) => {
+        editarCliente(data._id as string, data).then(rep => {
+            handleToggleModal();
+            setToastMsg(rep.msg);
+            setOpenToast(true);
+        })
+    }
+
+    const handleToggleModal = () => {
+        setOpenModal(false);
+    }
+
 
     return (
-        <Box>
-            <AppBar position="static" color="primary">
-                <Toolbar>
-                    <Typography variant="h6">
-                        Consultar clientes
-                    </Typography>
-                </Toolbar>
-            </AppBar>
-            <Paper elevation={3} sx={{p : 4, m : 4}}>
-                <Box display="flex" alignItems="center" gap={2}>
+        <>
+            <Box>
+                <AppBar position="static" color="primary">
+                    <Toolbar>
+                        <Typography variant="h6">
+                            Consultar clientes
+                        </Typography>
+                    </Toolbar>
+                </AppBar>
+                <Paper elevation={3} sx={{p : 4, m : 4}}>
+                    <Box display="flex" alignItems="center" gap={2}>
 
-                    <Select
-                        defaultValue=""
-                        displayEmpty
-                        onChange={handleSelect}
-                        sx={{ minWidth: 120 }}
-                    >
-                        <MenuItem value="">Seleccione una opcion</MenuItem>
-                        {opcionesBusqueda.map(op => (
-                            <MenuItem key={op.id} value={op.id}>{op.label}</MenuItem>
-                        ))}
-                    </Select>
+                        <Select
+                            defaultValue=""
+                            displayEmpty
+                            onChange={handleSelect}
+                            sx={{ minWidth: 120 }}
+                        >
+                            <MenuItem value="">Seleccione una opcion</MenuItem>
+                            {opcionesBusqueda.map(op => (
+                                <MenuItem key={op.id} value={op.id}>{op.label}</MenuItem>
+                            ))}
+                        </Select>
 
-                    <form style={{ display: 'flex', alignItems: 'center', gap: '60',  width: '100%'}} onSubmit={handleSubmit(submitSearch)}>
-                        {tipoBusqueda === OpcionesBusqueda.NOMBRE ? (
-                            <Controller
-                                name="nombre"
-                                control={control}
-                                defaultValue=""
-                                render={({ field }) => (
-                                    <Autocomplete
-                                        freeSolo
-                                        sx={{ flexGrow: 1 }}
-                                        options={clientesOriginales.map((option) => `${option.nombres} ${option.apellidos}`)}
-                                        value={field.value || ""}
-                                        onChange={(_, newValue) => field.onChange(newValue)}
-                                        renderInput={(params) => <TextField {...params} label="Nombre persona" />}
-                                    />
-                                )}
-                            />
-                          ) : tipoBusqueda === OpcionesBusqueda.DOCUMENTO ? (
-                                <Box gap={2} display="flex">
-                                    <Controller
-                                        name="tipoDocumento"
-                                        control={control}
-                                        defaultValue=""
-                                        render={({ field }) => (
-                                            <Select
-                                                {...field}
-                                                displayEmpty
-                                                sx={{ minWidth: 120 }}
-                                            >
-                                                <MenuItem value="">Seleccione una opción</MenuItem>
-                                                {documentoS.map(op => (
-                                                    <MenuItem key={op.id} value={op.id}>{op.label}</MenuItem>
-                                                ))}
-                                            </Select>
-                                        )}
-                                    />
-                                    <Controller
-                                        name="documento"
-                                        defaultValue=""
-                                        control={control}
-                                        render={({ field }) => <TextField {...field} label="Documento" />}
-                                    />
-                                </Box>
-                        ) :
-                        tipoBusqueda === OpcionesBusqueda.FECHA && (
-                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <form style={{ display: 'flex', alignItems: 'center', gap: '60',  width: '100%'}} onSubmit={handleSubmit(submitSearch)}>
+                            {tipoBusqueda === OpcionesBusqueda.NOMBRE ? (
                                 <Controller
-                                    name="fecha"
+                                    name="nombre"
                                     control={control}
-                                    defaultValue={null}
+                                    defaultValue=""
                                     render={({ field }) => (
-                                        <DemoContainer components={["DatePicker"]}>
-                                            <DatePicker
-                                                label="Fecha de Nacimiento"
-                                                value={field.value ? dayjs(field.value) : null}
-                                                onChange={(newValue) => field.onChange(newValue)}
-                                            />
-                                        </DemoContainer>
+                                        <Autocomplete
+                                            freeSolo
+                                            sx={{ flexGrow: 1 }}
+                                            options={clientesOriginales.map((option) => `${option.nombres} ${option.apellidos}`)}
+                                            value={field.value || ""}
+                                            onChange={(_, newValue) => field.onChange(newValue)}
+                                            renderInput={(params) => <TextField {...params} label="Nombre persona" />}
+                                        />
                                     )}
                                 />
-                            </LocalizationProvider>
-                        )}
-                        {showButton && (<Button type="submit">Buscar</Button>)}
-                    </form>
-                </Box>
-                {renderTable && (
-                    <Box>
-                        <TableRender data={clientes} editData={editData} deleteData={deleteData}/>
+                            ) : tipoBusqueda === OpcionesBusqueda.DOCUMENTO ? (
+                                    <Box gap={2} display="flex">
+                                        <Controller
+                                            name="tipoDocumento"
+                                            control={control}
+                                            defaultValue=""
+                                            render={({ field }) => (
+                                                <Select
+                                                    {...field}
+                                                    displayEmpty
+                                                    sx={{ minWidth: 120 }}
+                                                >
+                                                    <MenuItem value="">Seleccione una opción</MenuItem>
+                                                    {documentoS.map(op => (
+                                                        <MenuItem key={op.id} value={op.id}>{op.label}</MenuItem>
+                                                    ))}
+                                                </Select>
+                                            )}
+                                        />
+                                        <Controller
+                                            name="documento"
+                                            defaultValue=""
+                                            control={control}
+                                            render={({ field }) => <TextField {...field} label="Documento" />}
+                                        />
+                                    </Box>
+                                ) :
+                                tipoBusqueda === OpcionesBusqueda.FECHA && (
+                                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                        <Controller
+                                            name="fecha"
+                                            control={control}
+                                            defaultValue={null}
+                                            render={({ field }) => (
+                                                <DemoContainer components={["DatePicker"]}>
+                                                    <DatePicker
+                                                        label="Fecha de Nacimiento"
+                                                        value={field.value ? dayjs(field.value) : null}
+                                                        onChange={(newValue) => field.onChange(newValue)}
+                                                    />
+                                                </DemoContainer>
+                                            )}
+                                        />
+                                    </LocalizationProvider>
+                                )}
+                            {showButton && (<Button type="submit">Buscar</Button>)}
+                        </form>
                     </Box>
-                )}
-            </Paper>
-        </Box>
+                    {renderTable && (
+                        <Box>
+                            <TableRender data={clientes} editData={editData} deleteData={deleteData}/>
+                        </Box>
+                    )}
+                </Paper>
+            </Box>
+            {openModal ? (
+                <ModalFormEdit onClose={handleToggleModal}>
+                    <ClienteForm enviarDatos={editarClientes} data={selectCliente} estados={[]} ciudades={[]} handleEstadoChange={() => {}}/>
+                </ModalFormEdit>
+            ) : ""}
+            <Toast open={openToast} msg={toastMsg} color={"success"} onClose={() => setOpenToast(false)}/>
+        </>
+
     )
 }

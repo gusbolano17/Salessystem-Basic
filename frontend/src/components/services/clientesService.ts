@@ -38,3 +38,10 @@ export const agregarCliente = async (body : Cliente) : Promise<any> => {
     });
     return dataResp.data;
 }
+
+export const editarCliente = async (id : string ,body : Cliente) : Promise<any> => {
+    const dataResp = await axios.put(`${URL}/clientes/editar/${id}`, body, {
+        headers : HttpHeader()
+    });
+    return dataResp.data;
+}
