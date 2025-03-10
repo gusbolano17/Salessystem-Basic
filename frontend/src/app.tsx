@@ -4,12 +4,14 @@ import {LayoutComponent} from "./components/Layout/layout-component.tsx";
 import {Login} from "./components/pages/login.tsx";
 import {Dashboard} from "./components/pages/dashboard.tsx";
 import {Productos} from "./components/pages/productos.tsx";
-import {Proveedores} from "./components/pages/proveedores.tsx";
 import {Ventas} from "./components/pages/ventas.tsx";
 import {PrivateRoute} from "./components/services/private-route.tsx";
 import {ConsultarClientes} from "./components/pages/clientes/consultar-clientes.tsx";
 import {CrearClientesPage} from "./components/pages/clientes/crear-clientes.tsx";
 import {ClientesParent} from "./components/pages/clientes/clientesParent.tsx";
+import {ProveedoresParent} from "./components/pages/proveedores/proveedores-parent.tsx";
+import {ConsultarProveedores} from "./components/pages/proveedores/consultar-proveedores.tsx";
+import {CrearProveedores} from "./components/pages/proveedores/crear-proveedores.tsx";
 
 
 export const App: FC = () => {
@@ -27,7 +29,10 @@ export const App: FC = () => {
                             <Route path="agregar" element={<CrearClientesPage/>}/>
                         </Route>
                         <Route path="/productos" element={<Productos />} />
-                        <Route path="/proveedores" element={<Proveedores />} />
+                        <Route path="/proveedores" element={<ProveedoresParent />}>
+                            <Route path="consultar" element={<ConsultarProveedores/>}/>
+                            <Route path="agregar" element={<CrearProveedores/>}/>
+                        </Route>
                         <Route path="/ventas" element={<Ventas />} />
                     </Route>
                 </Routes>

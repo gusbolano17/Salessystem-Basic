@@ -50,7 +50,14 @@ const Sidebar: FC<SidebarProps> = ({ open = false }) => {
             ]
         },
         { text: 'productos', path: '/productos', icon: <Inventory /> },
-        { text: 'proveedores', path: '/proveedores', icon: <LocalShipping /> },
+        {
+            text : 'proveedores',
+            icon : <LocalShipping/>,
+            subitems : [
+                {text : 'Agregar proveedor', path : '/proveedores/agregar', icon : <LocalShipping/>},
+                {text : 'Consultar proveedores', path : '/proveedores/consultar', icon : <LocalShipping/>},
+            ]
+        },
         { text: 'ventas', path: '/ventas', icon: <Receipt /> }
     ], []);
 

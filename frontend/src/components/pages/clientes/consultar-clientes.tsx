@@ -31,11 +31,15 @@ import {ModalFormEdit} from "../../utils/modal-form-edit.tsx";
 import {Cliente} from "../../models/cliente-model.ts";
 import {ClienteForm} from "../../forms/ClienteForm.tsx";
 import {Toast} from "../../utils/toast.tsx";
+import {Locaciones} from "../../models/locaciones.ts";
+import {listarLocaciones} from "../../services/locationService.ts";
 
 export const ConsultarClientes : FC = () => {
 
-    const {handleSubmit, control, reset} = useForm();
+    const {handleSubmit, control, reset, setValue} = useForm();
 
+    const [estados, setEstados] = useState<Locaciones[]>([]);
+    const [ciudades, setCiudades] = useState<string[]>([]);
     const [clientes, setClientes] = useState<any[]>([]);
     const [selectCliente, setSelectCliente] = useState<Cliente>();
     const [clientesOriginales, setClientesOriginales] = useState<any[]>([]);
@@ -57,6 +61,11 @@ export const ConsultarClientes : FC = () => {
     }));
 
     useEffect(() => {
+        listarCl();
+        listarEstados();
+    }, []);
+
+    const listarCl = () => {
         let isMounted = true;
         listarClientes().then(resp => {
             if(isMounted){
@@ -65,7 +74,25 @@ export const ConsultarClientes : FC = () => {
             }
         }).catch(console.error);
         return () => {isMounted = false}
-    }, []);
+    }
+
+    const listarEstados = () => {
+        listarLocaciones()
+            .then(resp => {
+                setEstados(resp);
+            })
+            .catch(err => {
+                console.error("Error al cargar las locaciones", err);
+            });
+    }
+
+    const handleEstadoChange = (event: SelectChangeEvent) => {
+        const selected = event.target.value;
+        setValue("locacion.estado", selected);
+
+        const ciudadesLista = estados.find(est => est.estado === selected)?.ciudades;
+        setCiudades(ciudadesLista as string[]);
+    };
 
     const handleSelect = (e : SelectChangeEvent) => {
         const value  = e.target.value as unknown as OpcionesBusqueda;
@@ -223,7 +250,7 @@ export const ConsultarClientes : FC = () => {
             </Box>
             {openModal ? (
                 <ModalFormEdit onClose={handleToggleModal}>
-                    <ClienteForm enviarDatos={editarClientes} data={selectCliente} estados={[]} ciudades={[]} handleEstadoChange={() => {}}/>
+                    <ClienteForm enviarDatos={editarClientes} data={selectCliente} estados={estados} ciudades={ciudades} handleEstadoChange={handleEstadoChange}/>
                 </ModalFormEdit>
             ) : ""}
             <Toast open={openToast} msg={toastMsg} color={"success"} onClose={() => setOpenToast(false)}/>
