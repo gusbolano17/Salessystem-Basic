@@ -28,7 +28,6 @@ clienteController.get("/obtener/:id",async (req: Request, res: Response) => {
 clienteController.post("/crear",async (req: Request, res: Response) => {
     try{
         const cliente = new Cliente(req.body);
-        cliente.estado = "ACTIVO";
         await cliente.save();
         res.status(201).json({msg: "Cliente creado correctamente"});
     }catch (err) {

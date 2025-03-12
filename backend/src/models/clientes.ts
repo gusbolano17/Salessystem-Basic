@@ -25,7 +25,7 @@ const clienteSchema: Schema<ICliente> = new Schema({
     documento: {type:String, required:true},
     tipoDocumento: {type:String, required:true},
     tipoPersona: {type:String, required:true},
-    estado: {type:String, required:true},
+    estado: {type:String, required:true, default : "ACTIVO"},
     locacion : { type: locacionSchema},
     fechaCreacion: { type: Date, default: Date.now },
     fechaModificacion: { type: Date, default: Date.now },

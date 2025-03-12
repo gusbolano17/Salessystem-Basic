@@ -8,4 +8,5 @@ export interface Proveedor{
     direccion: string;
     productos : Producto[];
     nit : string;
+    estado : string;
 }

@@ -3,15 +3,16 @@ import {AppBar, Box, Paper, Toolbar, Typography} from "@mui/material";
 import {Toast} from "../../utils/toast.tsx";
 import {ProveedorForm} from "../../forms/ProveedorForm.tsx";
 import {Proveedor} from "../../models/proveedor-model.ts";
-import {agregarProveedor} from "../../services/proveedorService.ts";
+import {crearProveedorProductos} from "../../services/proveedorService.ts";
+import {Producto} from "../../models/producto-model.ts";
 
 export const CrearProveedores : FC = () => {
 
     const [openToast, setOpenToast] = useState<boolean>(false);
     const [toastMsg, setToastMsg] = useState<string>("");
 
-    const submitProveedor = async (data : Proveedor)=>  {
-        const result = await agregarProveedor(data);
+    const submitProveedor = async (data : Proveedor, productos : Producto[])=>  {
+        const result = await crearProveedorProductos(data, productos);
         setToastMsg(result.msg);
         setOpenToast(true);
     }

@@ -1,8 +1,6 @@
-import axios from "axios";
-
-const URL : string = "http://localhost:3000/api";
+import api from "../utils/HttpInterceptor.ts";
 
 export const login = async (body : any) : Promise<any> => {
-    const resp = await axios.post(`${URL}/auth/login`, body);
+    const resp = await api.post(`/auth/login`, body);
     return resp.data;
 }

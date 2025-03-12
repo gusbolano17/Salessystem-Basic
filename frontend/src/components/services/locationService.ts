@@ -1,12 +1,7 @@
-import axios from "axios";
 import {Locaciones} from "../models/locaciones.ts";
-import {HttpHeader} from "../utils/httpHeaders.ts";
-
-const URL : string = "http://localhost:3000/api";
+import api from "../utils/HttpInterceptor.ts";
 
 export const listarLocaciones = async (): Promise<Locaciones[]> => {
-    const resp = await axios.get(`${URL}/locaciones/listar`, {
-        headers : HttpHeader()
-    });
+    const resp = await api.get(`/locaciones/listar`);
     return resp.data;
 };

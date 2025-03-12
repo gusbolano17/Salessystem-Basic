@@ -7,6 +7,9 @@ interface IProveedor extends Document{
     direccion: string;
     productos : Schema.Types.ObjectId[];
     nit : string;
+    fechaCreacion : Date;
+    fechaModificacion : Date;
+    estado : string;
 }
 
 const proveedorSchema : Schema<IProveedor> = new Schema({
@@ -15,7 +18,10 @@ const proveedorSchema : Schema<IProveedor> = new Schema({
     email: {type:String, required:true, unique:true},
     direccion: {type:String, required:true},
     nit : {type:String, required:true, unique:true},
-    productos : [{type: Schema.Types.ObjectId, ref: "Productos"}]
+    productos : [{type: Schema.Types.ObjectId, ref: "Productos"}],
+    fechaCreacion: { type: Date, default: Date.now },
+    fechaModificacion: { type: Date, default: Date.now },
+    estado : {type:String, required:true, default : "ACTIVO"},
 });
 
 export default model<IProveedor>("proveedor",proveedorSchema);

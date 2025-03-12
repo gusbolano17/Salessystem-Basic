@@ -29,7 +29,7 @@ proveedorController.post("/crear",async (req: Request, res: Response) => {
     try{
         const proveedor = new Proveedor(req.body);
         await proveedor.save();
-        res.status(201).json({msg: "Proveedor creado correctamente"});
+        res.status(201).json({msg: "Proveedor creado correctamente", proveedor});
     }catch (err) {
         res.status(500).json({ error: "Error al crear el proveedor" });
     }

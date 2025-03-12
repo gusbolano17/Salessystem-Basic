@@ -2,6 +2,7 @@ import {FC} from "react";
 import {Box, Card, CardContent, CardHeader, Grid2, Typography} from "@mui/material";
 
 export const Dashboard : FC = () => {
+
     return (
         <Box display={"flex"}>
             <Box component="main" flexGrow={1} p={3}>
